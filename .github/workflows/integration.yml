@@ -1,0 +1,47 @@
+name: Integration
+
+on:
+  pull_request:
+    branches: [ main ]
+    types: [opened, synchronize, ready_for_review] # run on draft PR, PR and convert PR
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment for integration'
+        default: 'dev'
+
+concurrency:
+  group: ${{ github.head_ref }}
+  cancel-in-progress: true
+
+
+jobs:
+  lint:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run linting
+        uses: Satisfai/dataops/.github/actions/run-lint@v1.0.1
+
+  tests:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+
+#      - name: Install ffmpeg
+#        run: |
+#          sudo apt-get update
+#          sudo apt install ffmpeg
+#          make auth-pip ENV=dev
+
+      - name: Run tests
+        uses: Satisfai/dataops/.github/actions/run-tests@v1.0.1
