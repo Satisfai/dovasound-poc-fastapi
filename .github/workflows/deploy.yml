@@ -26,8 +26,10 @@ jobs:
       - name: Prepare env
         run: |
           ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=180 -o ServerAliveCountMax=5 ec2-user@${{ secrets.EC2_HOST }} '
-            # Install copier if not present
-            command -v copier >/dev/null 2>&1 || pip3 install --user copier
+            mkdir -p ~/app
+          '
+          rsync -avz --progress ./ ec2-user@${{ secrets.EC2_HOST }}:/home/ec2-user/app/
+          ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=180 -o ServerAliveCountMax=5 ec2-user@${{ secrets.EC2_HOST }} '
             
             # delete frontend and backend containers and images
             docker ps -q --filter "name=frontend" --filter "name=backend" | xargs -r docker stop
@@ -35,15 +37,10 @@ jobs:
             docker images -q frontend | xargs -r docker rmi -f
             docker images -q backend | xargs -r docker rmi -f
             docker volume ls -q | grep -E "frontend|backend" | xargs -r docker volume rm
-
-            # Ensure deployment directory exists
-            mkdir -p ~/app
+          
             cd ~/app
-
-            copier copy https://github.com/fastapi/full-stack-fastapi-template.git ./full-stack-fastapi-template \
-              -w --trust --defaults -r HEAD
-            sudo cp ~/app/full-stack-fastapi-template/docker-compose.traefik.yml /root/code/traefik-public/docker-compose.traefik.yml
-            sudo cp -r ~/app/full-stack-fastapi-template /root/code/full-stack-fastapi-template
+            sudo cp ~/app/docker-compose.traefik.yml /root/code/traefik-public/docker-compose.traefik.yml
+            sudo cp -r ~/app /root/code
           '
 
       - name: Starting dockers
@@ -66,7 +63,7 @@ jobs:
               export FIRST_SUPERUSER_PASSWORD=${{ secrets.FIRST_SUPERUSER_PASSWORD }}
               export EMAIL=jiayu.zhang@dovahealth.ca
 
-              docker-compose -f /root/code/full-stack-fastapi-template/docker-compose.yml --project-name ${{ vars.STACK_NAME }} build
-              docker-compose -f /root/code/full-stack-fastapi-template/docker-compose.yml --project-name ${{ vars.STACK_NAME }} up -d
+              docker-compose -f /root/code/docker-compose.yml --project-name ${{ vars.STACK_NAME }} build
+              docker-compose -f /root/code/docker-compose.yml --project-name ${{ vars.STACK_NAME }} up -d
             "
           '
