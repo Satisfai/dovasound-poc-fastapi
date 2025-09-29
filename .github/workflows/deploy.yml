@@ -72,7 +72,7 @@ jobs:
               export FIRST_SUPERUSER_PASSWORD=${{ secrets.FIRST_SUPERUSER_PASSWORD }}
               export EMAIL=jiayu.zhang@dovahealth.ca
 
-              docker compose -f /root/code/docker-compose.yml --project-name ${{ vars.STACK_NAME }} build
-              docker compose -f /root/code/docker-compose.yml --project-name ${{ vars.STACK_NAME }} up -d
+              docker-compose -f /root/code/docker-compose.yml --project-name ${{ vars.STACK_NAME }} build
+              docker-compose -f /root/code/docker-compose.yml --project-name ${{ vars.STACK_NAME }} up -d
             "
           '
