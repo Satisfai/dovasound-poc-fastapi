@@ -30,6 +30,6 @@ def test_email(email_to: EmailStr) -> Message:
 async def health_check() -> bool:
     return True
 
-@router.get("/hello/")
+@router.get("/hello-dovasound/")
 async def health_check() -> str:
     return "Hello World!"
