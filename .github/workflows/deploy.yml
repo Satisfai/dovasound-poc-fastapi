@@ -46,16 +46,16 @@ jobs:
 
             docker images -q frontend:latest backend:latest adminer:latest postgres:17 | xargs -r docker rmi
             docker image prune -f
-          
-            cd ~/app
-            sudo cp ~/app/docker-compose.traefik.yml /root/code/traefik-public/docker-compose.traefik.yml
-            sudo cp -r ~/app /root/code
+            
           '
 
       - name: Starting dockers
         run: |
           ssh -o StrictHostKeyChecking=no -o ServerAliveInterval=180 -o ServerAliveCountMax=5 ec2-user@${{ secrets.EC2_HOST }} '
             sudo bash -c "
+              cp /home/ec2-user/app/docker-compose.traefik.yml /root/code/traefik-public/docker-compose.traefik.yml
+              cp -r /home/ec2-user/app /root/code
+          
               export ENVIRONMENT=${{ vars.ENVIRONMENT }}
               export STACK_NAME=${{ vars.STACK_NAME }}
               export DOMAIN=${{ vars.DOMAIN }}
@@ -72,7 +72,7 @@ jobs:
               export FIRST_SUPERUSER_PASSWORD=${{ secrets.FIRST_SUPERUSER_PASSWORD }}
               export EMAIL=jiayu.zhang@dovahealth.ca
 
-              docker-compose -f /root/code/docker-compose.yml --project-name ${{ vars.STACK_NAME }} build
-              docker-compose -f /root/code/docker-compose.yml --project-name ${{ vars.STACK_NAME }} up -d
+              docker-compose -f /root/code/app/docker-compose.yml --project-name ${{ vars.STACK_NAME }} build
+              docker-compose -f /root/code/app/docker-compose.yml --project-name ${{ vars.STACK_NAME }} up -d
             "
           '
